@@ -1,0 +1,29 @@
+# Secret keys — never commit these
+key.txt
+weather_key.txt
+*.txt
+.env
+.env.local
+
+# Database and squad data — contains user data
+out_app.db
+squads.json
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Flask session
+flask_session/

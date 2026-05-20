@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>out. — profile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--yellow:#FFE000;--pink:#FF3CAC;--blue:#3B82F6;--green:#00D4AA;--black:#0D0D0D;--white:#fff;--gray:#F2F2F0;--muted:#888;--radius:16px;--pill:100px}
+    body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--gray);color:var(--black);min-height:100vh}
+    body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 600px 400px at 10% 20%,rgba(255,60,172,.10) 0%,transparent 70%),radial-gradient(ellipse 500px 350px at 90% 10%,rgba(59,130,246,.10) 0%,transparent 70%),radial-gradient(ellipse 400px 300px at 80% 80%,rgba(0,212,170,.10) 0%,transparent 70%);pointer-events:none;z-index:0}
+    header,main{position:relative;z-index:1}
+    header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 2rem;border-bottom:2px solid var(--black);background:var(--gray);position:sticky;top:0;z-index:100}
+    .logo{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;letter-spacing:-.04em;text-decoration:none;color:var(--black);display:flex;align-items:center;gap:4px}
+    .logo-dot{width:10px;height:10px;background:var(--pink);border-radius:50%;animation:pulse 2s ease-in-out infinite}
+    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.4)}}
+    .nav-btns{display:flex;gap:8px}
+    .nav-btn{font-size:13px;font-weight:700;padding:7px 16px;border-radius:var(--pill);border:2px solid var(--black);background:transparent;cursor:pointer;text-decoration:none;color:var(--black);font-family:'Plus Jakarta Sans',sans-serif;transition:all .12s}
+    .nav-btn:hover{background:var(--black);color:var(--yellow)}
+    .nav-btn.primary{background:var(--black);color:var(--yellow)}
+    main{max-width:860px;margin:0 auto;padding:2rem}
+
+    /* AUTH MODAL */
+    .modal-wrap{display:none;position:fixed;inset:0;background:rgba(13,13,13,.7);backdrop-filter:blur(6px);z-index:200;align-items:center;justify-content:center;padding:1rem}
+    .modal-wrap.open{display:flex}
+    .modal{background:var(--white);border:3px solid var(--black);border-radius:var(--radius);padding:2rem;max-width:420px;width:100%;box-shadow:8px 8px 0 var(--pink);animation:pop .2s cubic-bezier(.34,1.56,.64,1)}
+    @keyframes pop{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+    .modal-close{position:absolute;top:1rem;right:1rem;background:var(--gray);border:2px solid var(--black);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+    .modal-close:hover{background:var(--yellow)}
+    .modal-title{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;letter-spacing:-.03em;margin-bottom:1rem}
+    .modal-tabs{display:flex;gap:6px;margin-bottom:1.25rem}
+    .modal-tab{flex:1;padding:8px;border:2px solid var(--black);border-radius:var(--pill);background:transparent;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .12s}
+    .modal-tab.active{background:var(--black);color:var(--yellow)}
+    .field-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px}
+    .text-input{width:100%;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;padding:10px 14px;border:2px solid var(--black);border-radius:var(--pill);background:var(--gray);color:var(--black);outline:none;margin-bottom:10px;transition:box-shadow .15s}
+    .text-input:focus{box-shadow:3px 3px 0 var(--black)}
+    .btn-full{width:100%;background:var(--black);color:var(--yellow);border:2px solid var(--black);border-radius:var(--pill);padding:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .12s;box-shadow:3px 3px 0 var(--pink)}
+    .btn-full:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--pink)}
+    .btn-full:disabled{opacity:.4;cursor:not-allowed;transform:none}
+    .error-msg{font-size:13px;color:#e74c3c;margin-bottom:8px;display:none}
+    .error-msg.show{display:block}
+
+    /* PROFILE */
+    .profile-card{background:var(--white);border:2px solid var(--black);border-radius:var(--radius);padding:1.5rem;box-shadow:5px 5px 0 var(--black);margin-bottom:1.25rem}
+    .profile-top{display:flex;align-items:flex-start;gap:1rem;flex-wrap:wrap}
+    .avatar{width:64px;height:64px;border-radius:50%;border:3px solid var(--black);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:var(--black);flex-shrink:0}
+    .profile-info{flex:1}
+    .profile-username{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;letter-spacing:-.03em}
+    .profile-city{font-size:13px;color:var(--muted);margin:3px 0 6px}
+    .profile-bio{font-size:14px;color:#444;line-height:1.5}
+    .profile-stats{display:flex;gap:1.5rem;margin-top:1rem}
+    .stat{text-align:center}
+    .stat-num{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800}
+    .stat-label{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+    .interest-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+    .interest-chip{font-size:11px;font-weight:700;padding:3px 10px;border-radius:var(--pill);background:var(--gray);border:1.5px solid rgba(0,0,0,.15)}
+    .follow-btn{padding:8px 20px;border-radius:var(--pill);border:2px solid var(--black);background:var(--black);color:var(--yellow);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .12s;box-shadow:3px 3px 0 var(--pink)}
+    .follow-btn:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--pink)}
+    .follow-btn.following{background:var(--white);color:var(--black);box-shadow:3px 3px 0 var(--black)}
+
+    /* TABS */
+    .tabs{display:flex;gap:6px;background:var(--white);border:2px solid var(--black);border-radius:var(--pill);padding:4px;margin-bottom:1.25rem;width:fit-content}
+    .tab{padding:7px 18px;border-radius:var(--pill);border:none;background:transparent;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:var(--muted);transition:all .12s}
+    .tab.active{background:var(--black);color:var(--yellow)}
+
+    /* ACTIVITY FEED */
+    .feed-list{display:flex;flex-direction:column;gap:10px}
+    .feed-item{background:var(--white);border:2px solid var(--black);border-radius:14px;padding:1rem 1.25rem;display:flex;gap:12px;align-items:flex-start;animation:slideIn .3s ease forwards;opacity:0}
+    @keyframes slideIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+    .feed-avatar{width:36px;height:36px;border-radius:50%;border:2px solid var(--black);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;flex-shrink:0}
+    .feed-content{flex:1}
+    .feed-text{font-size:13px;line-height:1.5;margin-bottom:4px}
+    .feed-text strong{font-weight:700}
+    .feed-time{font-size:11px;color:var(--muted)}
+    .feed-event-card{background:var(--gray);border:1.5px solid rgba(0,0,0,.12);border-radius:10px;padding:8px 12px;margin-top:6px;font-size:12px;color:#444;line-height:1.4}
+    .feed-event-title{font-weight:700;font-size:13px;color:var(--black);margin-bottom:2px}
+
+    /* SAVED EVENTS */
+    .saved-grid{display:flex;flex-direction:column;gap:10px}
+    .saved-card{background:var(--white);border:2px solid var(--black);border-radius:14px;padding:1rem 1.25rem;display:flex;justify-content:space-between;align-items:start;gap:1rem}
+    .saved-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+    .saved-meta{font-size:12px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap}
+    .price-tag{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;background:var(--yellow);border:2px solid var(--black);border-radius:8px;padding:3px 10px;white-space:nowrap}
+    .price-tag.free{background:var(--green)}
+
+    /* EDIT PROFILE */
+    .edit-section{background:var(--white);border:2px solid var(--black);border-radius:var(--radius);padding:1.5rem;box-shadow:4px 4px 0 var(--black);margin-bottom:1.25rem}
+    .edit-section h3{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;margin-bottom:1rem}
+    .interest-toggle{padding:7px 14px;border-radius:var(--pill);border:2px solid var(--black);background:var(--white);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .12s}
+    .interest-toggle.on{background:var(--pink);border-color:var(--pink);color:var(--white)}
+    textarea.text-input{border-radius:14px;resize:vertical;min-height:80px}
+
+    /* SEARCH USERS */
+    .search-input{width:100%;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;padding:10px 16px;border:2px solid var(--black);border-radius:var(--pill);background:var(--white);outline:none;margin-bottom:10px;transition:box-shadow .15s}
+    .search-input:focus{box-shadow:3px 3px 0 var(--black)}
+    .user-result{display:flex;align-items:center;gap:12px;padding:10px;background:var(--white);border:2px solid var(--black);border-radius:12px;margin-bottom:8px;cursor:pointer;transition:all .12s;text-decoration:none;color:inherit}
+    .user-result:hover{transform:translate(-2px,-2px);box-shadow:4px 4px 0 var(--black)}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--black);color:var(--yellow);padding:10px 20px;border-radius:var(--pill);font-size:13px;font-weight:700;z-index:999;transition:transform .3s;white-space:nowrap}
+    .toast.show{transform:translateX(-50%) translateY(0)}
+
+    .empty-state{text-align:center;padding:3rem 2rem;color:var(--muted)}
+    .empty-emoji{font-size:2.5rem;margin-bottom:.75rem}
+    .section-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.75rem;display:block}
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="/">out<span class="logo-dot"></span></a>
+  <div class="nav-btns">
+    <a href="/" class="nav-btn">← Events</a>
+    <a href="/squad" class="nav-btn">👥 Squad</a>
+    <button class="nav-btn primary" id="authBtn" onclick="openAuth()">Sign in</button>
+  </div>
+</header>
+
+<div class="toast" id="toast"></div>
+
+<!-- AUTH MODAL -->
+<div class="modal-wrap" id="authModal">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" onclick="closeAuth()">✕</button>
+    <div class="modal-tabs">
+      <button class="modal-tab active" id="loginTab" onclick="switchTab('login')">Sign in</button>
+      <button class="modal-tab" id="signupTab" onclick="switchTab('signup')">Sign up</button>
+    </div>
+
+    <div id="loginForm">
+      <div class="error-msg" id="loginError"></div>
+      <label class="field-label">Email</label>
+      <input class="text-input" id="loginEmail" type="email" placeholder="your@email.com"/>
+      <label class="field-label">Password</label>
+      <input class="text-input" id="loginPassword" type="password" placeholder="Password"/>
+      <button class="btn-full" onclick="doLogin()">Sign in →</button>
+    </div>
+
+    <div id="signupForm" style="display:none">
+      <div class="error-msg" id="signupError"></div>
+      <label class="field-label">Username</label>
+      <input class="text-input" id="signupUsername" placeholder="e.g. priya_events" maxlength="20"/>
+      <label class="field-label">Email</label>
+      <input class="text-input" id="signupEmail" type="email" placeholder="your@email.com"/>
+      <label class="field-label">Password</label>
+      <input class="text-input" id="signupPassword" type="password" placeholder="At least 6 characters"/>
+      <label class="field-label">City</label>
+      <input class="text-input" id="signupCity" placeholder="London" value="London"/>
+      <button class="btn-full" onclick="doSignup()">Create account →</button>
+    </div>
+  </div>
+</div>
+
+<main id="mainContent">
+  <div class="empty-state" style="padding-top:4rem">
+    <div class="empty-emoji">👤</div>
+    <p>Loading...</p>
+  </div>
+</main>
+
+<script>
+  let currentUser = null;
+  let viewingUsername = null;
+
+  // Check URL for profile username
+  const pathParts = window.location.pathname.split('/');
+  if (pathParts.length >= 3 && pathParts[1] === 'profile' && pathParts[2]) {
+    viewingUsername = pathParts[2];
+  }
+
+  // ── INIT ──
+  async function init() {
+    const res = await fetch('/api/auth/me');
+    const data = await res.json();
+    currentUser = data.user;
+
+    updateAuthBtn();
+
+    if (viewingUsername) {
+      loadUserProfile(viewingUsername);
+    } else if (currentUser) {
+      loadOwnProfile();
+    } else {
+      showLoginPrompt();
+    }
+  }
+
+  function updateAuthBtn() {
+    const btn = document.getElementById('authBtn');
+    if (currentUser) {
+      btn.textContent = `@${currentUser.username}`;
+      btn.onclick = loadOwnProfile;
+    } else {
+      btn.textContent = 'Sign in';
+      btn.onclick = openAuth;
+    }
+  }
+
+  function showLoginPrompt() {
+    document.getElementById('mainContent').innerHTML = `
+      <div class="empty-state" style="padding-top:4rem">
+        <div class="empty-emoji">👋</div>
+        <h3 style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;margin-bottom:.5rem;color:var(--black)">Join out.</h3>
+        <p style="margin-bottom:1.5rem">Sign in to save events, follow friends and see what's popular.</p>
+        <button class="btn-full" style="max-width:200px;margin:0 auto" onclick="openAuth()">Sign in or sign up →</button>
+      </div>`;
+  }
+
+  // ── AUTH ──
+  function openAuth() { document.getElementById('authModal').classList.add('open'); }
+  function closeAuth() { document.getElementById('authModal').classList.remove('open'); }
+  function switchTab(tab) {
+    document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+    document.getElementById('signupForm').style.display = tab === 'signup' ? 'block' : 'none';
+    document.getElementById('loginTab').classList.toggle('active', tab === 'login');
+    document.getElementById('signupTab').classList.toggle('active', tab === 'signup');
+  }
+
+  async function doLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const errEl = document.getElementById('loginError');
+    errEl.classList.remove('show');
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({email, password})
+      });
+      const data = await res.json();
+      if (data.error) { errEl.textContent = data.error; errEl.classList.add('show'); return; }
+      currentUser = data.user;
+      closeAuth();
+      updateAuthBtn();
+      loadOwnProfile();
+      showToast(`Welcome back, ${data.user.username}! 👋`);
+    } catch(e) { errEl.textContent = 'Something went wrong'; errEl.classList.add('show'); }
+  }
+
+  async function doSignup() {
+    const username = document.getElementById('signupUsername').value.trim();
+    const email = document.getElementById('signupEmail').value.trim();
+    const password = document.getElementById('signupPassword').value;
+    const city = document.getElementById('signupCity').value.trim() || 'London';
+    const errEl = document.getElementById('signupError');
+    errEl.classList.remove('show');
+    try {
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({username, email, password, city})
+      });
+      const data = await res.json();
+      if (data.error) { errEl.textContent = data.error; errEl.classList.add('show'); return; }
+      currentUser = data.user;
+      closeAuth();
+      updateAuthBtn();
+      loadOwnProfile();
+      showToast(`Welcome to out., ${data.user.username}! 🎉`);
+    } catch(e) { errEl.textContent = 'Something went wrong'; errEl.classList.add('show'); }
+  }
+
+  async function doLogout() {
+    await fetch('/api/auth/logout', {method:'POST'});
+    currentUser = null;
+    updateAuthBtn();
+    showLoginPrompt();
+    showToast('Logged out');
+  }
+
+  // ── LOAD OWN PROFILE ──
+  function loadOwnProfile() {
+    if (!currentUser) { openAuth(); return; }
+    renderOwnProfile();
+  }
+
+  function renderOwnProfile() {
+    const u = currentUser;
+    const initials = u.username.slice(0,2).toUpperCase();
+    document.getElementById('mainContent').innerHTML = `
+      <div class="profile-card">
+        <div class="profile-top">
+          <div class="avatar" style="background:${u.avatar_color}">${initials}</div>
+          <div class="profile-info">
+            <div class="profile-username">@${u.username}</div>
+            <div class="profile-city">📍 ${u.city}</div>
+            <div class="profile-bio">${u.bio || 'No bio yet'}</div>
+            <div class="interest-chips">${(u.interests||[]).map(i=>`<span class="interest-chip">${i}</span>`).join('')}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <button class="nav-btn" onclick="renderEditProfile()">Edit profile</button>
+            <button class="nav-btn" onclick="doLogout()" style="color:#e74c3c;border-color:#e74c3c">Sign out</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" onclick="showTab('feed',this)">Activity</button>
+        <button class="tab" onclick="showTab('saved',this)">Saved events</button>
+        <button class="tab" onclick="showTab('discover',this)">Find friends</button>
+      </div>
+
+      <div id="tabContent"></div>`;
+
+    loadFeed();
+  }
+
+  function showTab(tab, btn) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    if (tab === 'feed') loadFeed();
+    else if (tab === 'saved') loadSaved();
+    else if (tab === 'discover') renderDiscover();
+  }
+
+  // ── ACTIVITY FEED ──
+  async function loadFeed() {
+    document.getElementById('tabContent').innerHTML = `<div style="text-align:center;padding:2rem;color:var(--muted)">Loading...</div>`;
+    try {
+      const res = await fetch('/api/social/feed');
+      const data = await res.json();
+      if (data.feed && data.feed.length > 0) {
+        renderFeed(data.feed);
+      } else {
+        document.getElementById('tabContent').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-emoji">📭</div>
+            <p>No activity yet. Save some events or follow friends!</p>
+          </div>`;
+      }
+    } catch(e) {}
+  }
+
+  function renderFeed(feed) {
+    const actionText = {
+      'joined out.': 'joined out. 🎉',
+      'saved': 'saved an event ❤️',
+      'going': 'is going to an event 🎟️'
+    };
+
+    const html = feed.map((item, i) => {
+      const initials = item.username.slice(0,2).toUpperCase();
+      const timeAgo = getTimeAgo(item.created_at);
+      const action = actionText[item.action] || item.action;
+      const evCard = item.event_data ? `
+        <div class="feed-event-card">
+          <div class="feed-event-title">${item.event_data.title || ''}</div>
+          ${item.event_data.date ? `📅 ${item.event_data.date}` : ''} ${item.event_data.location ? `· 📍 ${item.event_data.location}` : ''}
+        </div>` : '';
+
+      return `<div class="feed-item" style="animation-delay:${i*0.05}s">
+        <div class="feed-avatar" style="background:${item.avatar_color}">${initials}</div>
+        <div class="feed-content">
+          <div class="feed-text"><strong>@${item.username}</strong> ${action}</div>
+          ${evCard}
+          <div class="feed-time">${timeAgo}</div>
+        </div>
+      </div>`;
+    }).join('');
+
+    document.getElementById('tabContent').innerHTML = `<div class="feed-list">${html}</div>`;
+  }
+
+  // ── SAVED EVENTS ──
+  async function loadSaved() {
+    document.getElementById('tabContent').innerHTML = `<div style="text-align:center;padding:2rem;color:var(--muted)">Loading...</div>`;
+    try {
+      const res = await fetch('/api/social/saved-events');
+      const data = await res.json();
+      if (data.events && data.events.length > 0) {
+        renderSaved(data.events);
+      } else {
+        document.getElementById('tabContent').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-emoji">🔖</div>
+            <p>No saved events yet. Heart events on the main page!</p>
+          </div>`;
+      }
+    } catch(e) {}
+  }
+
+  function renderSaved(events) {
+    const html = events.map(ev => {
+      const isFree = (ev.price||'').toLowerCase() === 'free' || ev.price_value === 0;
+      return `<div class="saved-card">
+        <div>
+          <div class="saved-title">${ev.title || 'Event'}</div>
+          <div class="saved-meta">
+            <span>📅 ${ev.date || '—'}</span>
+            <span>📍 ${ev.location || '—'}</span>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          <span class="price-tag ${isFree?'free':''}">${isFree?'Free':(ev.price||'—')}</span>
+          ${ev.url ? `<a href="${ev.url}" target="_blank" style="font-size:12px;color:var(--pink);font-weight:700;text-decoration:none;">View ↗</a>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+    document.getElementById('tabContent').innerHTML = `<div class="saved-grid">${html}</div>`;
+  }
+
+  // ── DISCOVER / FIND FRIENDS ──
+  function renderDiscover() {
+    document.getElementById('tabContent').innerHTML = `
+      <input class="search-input" id="userSearch" placeholder="Search by username..." oninput="searchUsers(this.value)"/>
+      <div id="userResults"></div>`;
+  }
+
+  let searchTimeout;
+  function searchUsers(q) {
+    clearTimeout(searchTimeout);
+    if (q.length < 2) { document.getElementById('userResults').innerHTML = ''; return; }
+    searchTimeout = setTimeout(async () => {
+      const res = await fetch(`/api/social/search-users?q=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      if (!data.users.length) {
+        document.getElementById('userResults').innerHTML = `<p style="font-size:13px;color:var(--muted)">No users found</p>`;
+        return;
+      }
+      document.getElementById('userResults').innerHTML = data.users.map(u => {
+        const initials = u.username.slice(0,2).toUpperCase();
+        return `<a class="user-result" href="/profile/${u.username}">
+          <div class="feed-avatar" style="background:${u.avatar_color};width:40px;height:40px;font-size:1rem">${initials}</div>
+          <div>
+            <div style="font-weight:700;font-size:14px">@${u.username}</div>
+            <div style="font-size:12px;color:var(--muted)">📍 ${u.city}</div>
+          </div>
+        </a>`;
+      }).join('');
+    }, 300);
+  }
+
+  // ── EDIT PROFILE ──
+  function renderEditProfile() {
+    const u = currentUser;
+    const allInterests = ['art','music','food','tech','hackathon','outdoor','film','culture','social','clubbing'];
+    document.getElementById('mainContent').innerHTML = `
+      <button class="nav-btn" onclick="renderOwnProfile()" style="margin-bottom:1rem">← Back to profile</button>
+      <div class="edit-section">
+        <h3>Edit profile</h3>
+        <label class="field-label">City</label>
+        <input class="text-input" id="editCity" value="${u.city}" placeholder="London"/>
+        <label class="field-label">Bio</label>
+        <textarea class="text-input" id="editBio" placeholder="Tell people what you're into...">${u.bio||''}</textarea>
+        <label class="field-label" style="margin-bottom:.5rem">Interests</label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1rem">
+          ${allInterests.map(i => `<button class="interest-toggle ${(u.interests||[]).includes(i)?'on':''}" onclick="this.classList.toggle('on')" data-interest="${i}">${i}</button>`).join('')}
+        </div>
+        <button class="btn-full" onclick="saveProfile()">Save changes →</button>
+      </div>`;
+  }
+
+  async function saveProfile() {
+    const city = document.getElementById('editCity').value.trim();
+    const bio = document.getElementById('editBio').value.trim();
+    const interests = [...document.querySelectorAll('.interest-toggle.on')].map(b => b.dataset.interest);
+    try {
+      await fetch('/api/auth/update', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({city, bio, interests})
+      });
+      currentUser = {...currentUser, city, bio, interests};
+      renderOwnProfile();
+      showToast('Profile updated ✓');
+    } catch(e) { showToast('Could not save'); }
+  }
+
+  // ── VIEW OTHER USER'S PROFILE ──
+  async function loadUserProfile(username) {
+    document.getElementById('mainContent').innerHTML = `<div style="text-align:center;padding:3rem;color:var(--muted)">Loading...</div>`;
+    try {
+      const res = await fetch(`/api/social/profile/${username}`);
+      const data = await res.json();
+      if (data.error) {
+        document.getElementById('mainContent').innerHTML = `<div class="empty-state"><div class="empty-emoji">🤷</div><p>User not found</p></div>`;
+        return;
+      }
+      renderOtherProfile(data);
+    } catch(e) {}
+  }
+
+  function renderOtherProfile(data) {
+    const u = data.user;
+    const initials = u.username.slice(0,2).toUpperCase();
+    const isOwn = currentUser && currentUser.id === u.id;
+
+    document.getElementById('mainContent').innerHTML = `
+      <div class="profile-card">
+        <div class="profile-top">
+          <div class="avatar" style="background:${u.avatar_color}">${initials}</div>
+          <div class="profile-info">
+            <div class="profile-username">@${u.username}</div>
+            <div class="profile-city">📍 ${u.city}</div>
+            <div class="profile-bio">${u.bio || ''}</div>
+            <div class="profile-stats">
+              <div class="stat"><div class="stat-num">${u.follower_count}</div><div class="stat-label">Followers</div></div>
+              <div class="stat"><div class="stat-num">${u.following_count}</div><div class="stat-label">Following</div></div>
+            </div>
+            <div class="interest-chips">${(u.interests||[]).map(i=>`<span class="interest-chip">${i}</span>`).join('')}</div>
+          </div>
+          ${!isOwn ? `<button class="follow-btn ${u.is_following?'following':''}" id="followBtn" onclick="toggleFollow(${u.id})">${u.is_following?'Following':'Follow'}</button>` : ''}
+        </div>
+      </div>
+
+      <span class="section-label">Recent activity</span>
+      <div class="feed-list" id="otherFeed">
+        ${data.activity.length ? data.activity.map((item,i) => `
+          <div class="feed-item" style="animation-delay:${i*.05}s">
+            <div class="feed-avatar" style="background:${u.avatar_color};width:36px;height:36px;font-size:.9rem">${initials}</div>
+            <div class="feed-content">
+              <div class="feed-text"><strong>${item.action}</strong>${item.event_title ? ` · ${item.event_title}` : ''}</div>
+              <div class="feed-time">${getTimeAgo(item.created_at)}</div>
+            </div>
+          </div>`).join('') : '<div class="empty-state"><div class="empty-emoji">📭</div><p>No activity yet</p></div>'}
+      </div>`;
+  }
+
+  async function toggleFollow(userId) {
+    if (!currentUser) { openAuth(); return; }
+    const res = await fetch('/api/social/follow', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({user_id: userId})
+    });
+    const data = await res.json();
+    const btn = document.getElementById('followBtn');
+    btn.textContent = data.following ? 'Following' : 'Follow';
+    btn.classList.toggle('following', data.following);
+    showToast(data.following ? 'Following! 👋' : 'Unfollowed');
+  }
+
+  // ── HELPERS ──
+  function getTimeAgo(dateStr) {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff/60000);
+    const hours = Math.floor(diff/3600000);
+    const days = Math.floor(diff/86400000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return `${mins}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    return `${days}d ago`;
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  init();
+</script>
+</body>
+</html>

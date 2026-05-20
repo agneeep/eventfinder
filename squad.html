@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>out. — squad planning</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --yellow: #FFE000;
+      --pink: #FF3CAC;
+      --blue: #3B82F6;
+      --green: #00D4AA;
+      --orange: #FF6B35;
+      --black: #0D0D0D;
+      --white: #FFFFFF;
+      --gray: #F2F2F0;
+      --muted: #888;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --pill: 100px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--gray);
+      color: var(--black);
+      min-height: 100vh;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 600px 400px at 10% 20%, rgba(255,60,172,0.10) 0%, transparent 70%),
+        radial-gradient(ellipse 500px 350px at 90% 10%, rgba(59,130,246,0.10) 0%, transparent 70%),
+        radial-gradient(ellipse 400px 300px at 80% 80%, rgba(0,212,170,0.10) 0%, transparent 70%),
+        radial-gradient(ellipse 450px 300px at 5% 85%, rgba(255,224,0,0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    header, main { position: relative; z-index: 1; }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 2rem;
+      border-bottom: 2px solid var(--black);
+      background: var(--gray);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--black);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .logo-dot {
+      width: 10px; height: 10px;
+      background: var(--pink);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.4)} }
+
+    .back-btn {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--black);
+      text-decoration: none;
+      border: 2px solid var(--black);
+      border-radius: var(--pill);
+      padding: 6px 16px;
+      transition: all 0.12s;
+    }
+
+    .back-btn:hover { background: var(--black); color: var(--yellow); }
+
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* ── SCREENS ── */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* ── LANDING ── */
+    .landing-headline {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+
+    .landing-headline .pink { color: var(--pink); }
+
+    .landing-sub {
+      font-size: 15px;
+      color: var(--muted);
+      margin-bottom: 2rem;
+      font-weight: 400;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+
+    .action-card {
+      background: var(--white);
+      border: 2px solid var(--black);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: 5px 5px 0 var(--black);
+    }
+
+    .action-card h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+    }
+
+    .action-card p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+
+    .field-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .text-input {
+      width: 100%;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 10px 14px;
+      border: 2px solid var(--black);
+      border-radius: var(--pill);
+      background: var(--gray);
+      color: var(--black);
+      outline: none;
+      margin-bottom: 10px;
+      transition: box-shadow 0.15s;
+    }
+
+    .text-input:focus { box-shadow: 3px 3px 0 var(--black); }
+
+    .btn-primary {
+      width: 100%;
+      background: var(--black);
+      color: var(--yellow);
+      border: 2px solid var(--black);
+      border-radius: var(--pill);
+      padding: 11px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.12s;
+      box-shadow: 3px 3px 0 var(--pink);
+    }
+
+    .btn-primary:hover { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 var(--pink); }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: 3px 3px 0 var(--pink); }
+
+    .btn-secondary {
+      width: 100%;
+      background: var(--yellow);
+      color: var(--black);
+      border: 2px solid var(--black);
+      border-radius: var(--pill);
+      padding: 11px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.12s;
+      box-shadow: 3px 3px 0 var(--black);
+    }
+
+    .btn-secondary:hover { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 var(--black); }
+
+    /* ── SQUAD ROOM ── */
+    .squad-header {
+      background: var(--black);
+      color: var(--white);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .squad-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .squad-city {
+      font-size: 13px;
+      color: rgba(255,255,255,0.6);
+      margin-top: 2px;
+    }
+
+    .squad-code-box {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+
+    .squad-code {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--yellow);
+      letter-spacing: 0.05em;
+    }
+
+    .code-label {
+      font-size: 10px;
+      color: rgba(255,255,255,0.5);
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .copy-btn {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: white;
+      border-radius: var(--pill);
+      padding: 4px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: all 0.12s;
+    }
+
+    .copy-btn:hover { background: var(--yellow); color: var(--black); border-color: var(--yellow); }
+
+    .members-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .member-pill {
+      background: var(--white);
+      border: 2px solid var(--black);
+      border-radius: var(--pill);
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .member-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    .member-pill.you { background: var(--yellow); border-color: var(--black); }
+
+    /* ── FILTER BAR ── */
+    .filter-bar {
+      background: var(--white);
+      border: 2px solid var(--black);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.25rem;
+      box-shadow: 4px 4px 0 var(--black);
+    }
+
+    .filter-bar-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 0.75rem; }
+
+    .chip {
+      padding: 6px 14px;
+      border-radius: var(--pill);
+      border: 2px solid var(--black);
+      background: var(--white);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+
+    .chip:hover { background: var(--gray); }
+    .chip.active { background: var(--pink); border-color: var(--pink); color: var(--white); }
+    .chip.budget-active { background: var(--green); border-color: var(--green); color: var(--black); }
+
+    .find-btn {
+      background: var(--black);
+      color: var(--yellow);
+      border: 2px solid var(--black);
+      border-radius: var(--pill);
+      padding: 10px 24px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.12s;
+      box-shadow: 3px 3px 0 var(--pink);
+    }
+
+    .find-btn:hover { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 var(--pink); }
+    .find-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    /* ── EVENT VOTE CARDS ── */
+    .events-list { display: flex; flex-direction: column; gap: 1rem; }
+
+    .vote-card {
+      background: var(--white);
+      border: 2px solid var(--black);
+      border-radius: var(--radius);
+      overflow: hidden;
+      animation: slideIn 0.3s ease forwards;
+      opacity: 0;
+    }
+
+    @keyframes slideIn { from { opacity:0; transform:translateY(10px) } to { opacity:1; transform:none } }
+
+    .vote-card:nth-child(1) { animation-delay: 0.05s; }
+    .vote-card:nth-child(2) { animation-delay: 0.1s; }
+    .vote-card:nth-child(3) { animation-delay: 0.15s; }
+    .vote-card:nth-child(4) { animation-delay: 0.2s; }
+    .vote-card:nth-child(5) { animation-delay: 0.25s; }
+
+    .vote-card.consensus-all { border-color: var(--green); box-shadow: 4px 4px 0 var(--green); }
+    .vote-card.consensus-popular { border-color: var(--yellow); box-shadow: 4px 4px 0 var(--black); }
+
+    .consensus-banner {
+      padding: 6px 16px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      display: none;
+    }
+
+    .consensus-all .consensus-banner { display: block; background: var(--green); color: #0a3d2e; }
+    .consensus-popular .consensus-banner { display: block; background: var(--yellow); color: #5a4400; }
+
+    .vote-card-body {
+      padding: 1.1rem 1.25rem;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .event-category {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: var(--gray);
+      border: 1.5px solid rgba(0,0,0,0.15);
+      border-radius: var(--pill);
+      padding: 2px 10px;
+      display: inline-block;
+      margin-bottom: 6px;
+    }
+
+    .event-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 3px;
+      line-height: 1.2;
+    }
+
+    .event-organiser { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+
+    .event-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .price-tag {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 800;
+      background: var(--yellow);
+      border: 2px solid var(--black);
+      border-radius: 8px;
+      padding: 3px 10px;
+      white-space: nowrap;
+    }
+
+    .price-tag.free { background: var(--green); }
+
+    /* ── VOTE BUTTONS ── */
+    .vote-buttons {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .vote-btn {
+      flex: 1;
+      padding: 8px 6px;
+      border-radius: var(--radius-sm);
+      border: 2px solid var(--black);
+      background: var(--white);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.12s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .vote-btn .vote-count { font-size: 11px; font-weight: 500; color: var(--muted); }
+
+    .vote-btn:hover { transform: translateY(-2px); }
+    .vote-btn.yes:hover, .vote-btn.yes.voted { background: var(--green); border-color: var(--green); }
+    .vote-btn.maybe:hover, .vote-btn.maybe.voted { background: var(--yellow); border-color: var(--black); }
+    .vote-btn.no:hover, .vote-btn.no.voted { background: #FFE5E5; border-color: #ff4444; }
+    .vote-btn.voted { transform: none; }
+
+    /* ── VOTE BAR ── */
+    .vote-bar-wrap { margin-top: 10px; }
+    .vote-bar-label { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+    .vote-bar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; background: var(--gray); border: 1px solid rgba(0,0,0,0.1); }
+    .vote-bar-yes { background: var(--green); transition: width 0.4s ease; }
+    .vote-bar-maybe { background: var(--yellow); transition: width 0.4s ease; }
+    .vote-bar-no { background: #ff4444; transition: width 0.4s ease; }
+
+    /* ── LOADING ── */
+    .loading-box {
+      text-align: center;
+      padding: 3rem 2rem;
+    }
+
+    .loading-blob {
+      width: 50px; height: 50px;
+      background: var(--pink);
+      border-radius: 50%;
+      border: 3px solid var(--black);
+      animation: blob 0.8s ease-in-out infinite alternate;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes blob { from { transform:scale(1); border-radius:50%; } to { transform:scale(1.15); border-radius:40% 60% 55% 45%; } }
+
+    .loading-text { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; }
+    .loading-sub { font-size: 13px; color: var(--muted); margin-top: 6px; }
+
+    /* ── EMPTY ── */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 2rem;
+      background: var(--white);
+      border: 2px solid var(--black);
+      border-radius: var(--radius);
+    }
+
+    .empty-emoji { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .empty-state h3 { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .empty-state p { font-size: 13px; color: var(--muted); }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--black);
+      color: var(--yellow);
+      padding: 10px 20px;
+      border-radius: var(--pill);
+      font-size: 13px;
+      font-weight: 700;
+      z-index: 999;
+      transition: transform 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ── POLL SECTION ── */
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .event-link {
+      font-size: 11px;
+      color: var(--pink);
+      font-weight: 700;
+      text-decoration: none;
+      margin-left: auto;
+    }
+
+    .event-link:hover { text-decoration: underline; }
+
+    .divider { height: 1px; background: rgba(0,0,0,0.08); margin: 1rem 0; }
+
+    .refresh-btn {
+      background: transparent;
+      border: 2px solid var(--black);
+      border-radius: var(--pill);
+      padding: 6px 14px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+
+    .refresh-btn:hover { background: var(--black); color: var(--yellow); }
+    /* ── DECISION WHEEL ── */
+    .wheel-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--yellow);
+      color: var(--black);
+      border: 2px solid var(--black);
+      border-radius: var(--pill);
+      padding: 8px 18px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.12s;
+      box-shadow: 3px 3px 0 var(--black);
+    }
+
+    .wheel-btn:hover { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 var(--black); }
+
+    .wheel-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(13,13,13,0.85);
+      backdrop-filter: blur(8px);
+      z-index: 300;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 1rem;
+    }
+
+    .wheel-overlay.open { display: flex; }
+
+    .wheel-modal {
+      background: var(--white);
+      border: 3px solid var(--black);
+      border-radius: 24px;
+      padding: 2rem;
+      max-width: 520px;
+      width: 100%;
+      box-shadow: 10px 10px 0 var(--pink);
+      animation: wheelPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      text-align: center;
+      position: relative;
+    }
+
+    @keyframes wheelPop {
+      from { opacity: 0; transform: scale(0.8) rotate(-5deg); }
+      to { opacity: 1; transform: scale(1) rotate(0deg); }
+    }
+
+    .wheel-close {
+      position: absolute;
+      top: 1rem; right: 1rem;
+      background: var(--gray);
+      border: 2px solid var(--black);
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .wheel-close:hover { background: var(--yellow); }
+
+    .wheel-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.25rem;
+    }
+
+    .wheel-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .wheel-wrap {
+      position: relative;
+      width: 300px;
+      height: 300px;
+      margin: 0 auto 1.5rem;
+    }
+
+    .wheel-pointer {
+      position: absolute;
+      top: -16px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 12px solid transparent;
+      border-right: 12px solid transparent;
+      border-top: 24px solid var(--black);
+      z-index: 10;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+
+    .wheel-center {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 36px; height: 36px;
+      background: var(--white);
+      border: 3px solid var(--black);
+      border-radius: 50%;
+      z-index: 10;
+    }
+
+    #wheelCanvas {
+      border-radius: 50%;
+      border: 3px solid var(--black);
+      box-shadow: 4px 4px 0 var(--black);
+    }
+
+    .spin-btn {
+      background: var(--black);
+      color: var(--yellow);
+      border: 2px solid var(--black);
+      border-radius: var(--pill);
+      padding: 14px 40px;
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.12s;
+      box-shadow: 4px 4px 0 var(--pink);
+      letter-spacing: -0.02em;
+    }
+
+    .spin-btn:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--pink); }
+    .spin-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: 4px 4px 0 var(--pink); }
+
+    .wheel-result {
+      margin-top: 1.25rem;
+      padding: 1rem 1.25rem;
+      background: var(--yellow);
+      border: 2px solid var(--black);
+      border-radius: var(--radius);
+      display: none;
+      animation: resultPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes resultPop {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .wheel-result.show { display: block; }
+    .result-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #5a4400; margin-bottom: 4px; }
+    .result-title { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 800; letter-spacing: -0.02em; color: var(--black); }
+    /* ── DEADLINE ── */
+    .deadline-bar {
+      background: var(--black);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .deadline-left { display: flex; align-items: center; gap: 10px; }
+
+    .countdown-ring {
+      position: relative;
+      width: 48px;
+      height: 48px;
+      flex-shrink: 0;
+    }
+
+    .countdown-ring svg { transform: rotate(-90deg); }
+
+    .countdown-ring .ring-bg { fill: none; stroke: rgba(255,255,255,0.15); stroke-width: 4; }
+    .countdown-ring .ring-fill { fill: none; stroke-width: 4; stroke-linecap: round; transition: stroke-dashoffset 1s linear, stroke 0.5s; }
+
+    .countdown-number {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Syne', sans-serif;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--white);
+    }
+
+    .deadline-text { }
+    .deadline-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 2px; }
+    .deadline-time { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; color: var(--yellow); letter-spacing: -0.02em; }
+
+    .deadline-actions { display: flex; gap: 6px; align-items: center; }
+
+    .deadline-clear {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.7);
+      border-radius: var(--pill);
+      padding: 5px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: all 0.12s;
+    }
+
+    .deadline-clear:hover { background: rgba(255,255,255,0.2); color: var(--white); }
+
+    .set-deadline-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .deadline-label-sm {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .deadline-preset {
+      padding: 5px 12px;
+      border: 1.5px solid var(--black);
+      border-radius: var(--pill);
+      background: var(--white);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+
+    .deadline-preset:hover { background: var(--black); color: var(--yellow); }
+
+    .expired-banner {
+      background: var(--pink);
+      border: 2px solid var(--black);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+      text-align: center;
+      animation: pulse-banner 1s ease-in-out 3;
+    }
+
+    @keyframes pulse-banner {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+    }
+
+    .expired-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--white);
+      margin-bottom: 2px;
+    }
+
+    .expired-sub { font-size: 13px; color: rgba(255,255,255,0.85); }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="/">out<span class="logo-dot"></span></a>
+  <a class="back-btn" href="/">← back to events</a>
+</header>
+
+<div class="toast" id="toast"></div>
+
+<main>
+  <!-- SCREEN 1: LANDING -->
+  <div class="screen active" id="screenLanding">
+    <div style="margin-bottom:2rem;">
+      <div style="display:inline-flex;align-items:center;gap:6px;background:var(--yellow);border:2px solid var(--black);border-radius:var(--pill);padding:5px 12px;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:1rem;">👥 Squad mode</div>
+      <h1 class="landing-headline">plan your next<br><span class="pink">group night out</span></h1>
+      <p class="landing-sub">Create a squad, share the code, everyone votes on events — app shows what you all agree on.</p>
+    </div>
+
+    <div class="two-col">
+      <!-- Create -->
+      <div class="action-card">
+        <h3>✦ Create a squad</h3>
+        <p>Start a new group. Share the code with your friends so they can join and vote.</p>
+        <label class="field-label">Your name</label>
+        <input class="text-input" id="createName" placeholder="e.g. Priya" maxlength="20"/>
+        <label class="field-label">Squad name</label>
+        <input class="text-input" id="squadName" placeholder="e.g. The Crew" maxlength="30"/>
+        <label class="field-label">City</label>
+        <input class="text-input" id="createCity" placeholder="London" value="London" maxlength="30"/>
+        <button class="btn-primary" onclick="createSquad()">Create squad →</button>
+      </div>
+
+      <!-- Join -->
+      <div class="action-card">
+        <h3>→ Join a squad</h3>
+        <p>Got a code from a friend? Enter it below to join their squad and start voting.</p>
+        <label class="field-label">Your name</label>
+        <input class="text-input" id="joinName" placeholder="e.g. Marcus" maxlength="20"/>
+        <label class="field-label">Squad code</label>
+        <input class="text-input" id="joinCode" placeholder="e.g. XK7-P2M" maxlength="7" style="text-transform:uppercase;letter-spacing:0.1em;font-family:'Syne',sans-serif;font-size:1.1rem;"/>
+        <button class="btn-secondary" onclick="joinSquad()">Join squad →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: SQUAD ROOM -->
+  <div class="screen" id="screenSquad">
+    <!-- Squad header -->
+    <div class="squad-header">
+      <div>
+        <div class="squad-name" id="squadDisplayName">The Crew</div>
+        <div class="squad-city" id="squadDisplayCity">📍 London</div>
+      </div>
+      <div class="squad-code-box">
+        <div class="code-label">Squad code</div>
+        <div class="squad-code" id="squadDisplayCode">XK7-P2M</div>
+        <button class="copy-btn" onclick="copyCode()">Copy & share</button>
+      </div>
+    </div>
+
+    <!-- Members -->
+    <div class="members-bar" id="membersBar"></div>
+
+    <!-- Deadline bar (shown when active) -->
+    <div class="deadline-bar" id="deadlineBar" style="display:none;">
+      <div class="deadline-left">
+        <div class="countdown-ring">
+          <svg viewBox="0 0 48 48" width="48" height="48">
+            <circle class="ring-bg" cx="24" cy="24" r="20"/>
+            <circle class="ring-fill" id="ringFill" cx="24" cy="24" r="20"
+              stroke="#FFE000" stroke-dasharray="125.7" stroke-dashoffset="0"/>
+          </svg>
+          <div class="countdown-number" id="countdownNumber">–</div>
+        </div>
+        <div class="deadline-text">
+          <div class="deadline-label">Voting closes in</div>
+          <div class="deadline-time" id="deadlineTime">–</div>
+        </div>
+      </div>
+      <div class="deadline-actions">
+        <button class="wheel-btn" onclick="openWheel()" style="font-size:12px;padding:6px 14px;">🎰 Spin now</button>
+        <button class="deadline-clear" onclick="clearDeadline()">✕ Cancel</button>
+      </div>
+    </div>
+
+    <!-- Set deadline row (shown when no deadline) -->
+    <div class="set-deadline-row" id="setDeadlineRow" style="display:none;">
+      <span class="deadline-label-sm">⏰ Set voting deadline:</span>
+      <button class="deadline-preset" onclick="setDeadline(15)">15 min</button>
+      <button class="deadline-preset" onclick="setDeadline(30)">30 min</button>
+      <button class="deadline-preset" onclick="setDeadline(60)">1 hour</button>
+      <button class="deadline-preset" onclick="setDeadline(180)">3 hours</button>
+      <button class="deadline-preset" onclick="setDeadline(1440)">24 hrs</button>
+    </div>
+    <div class="filter-bar">
+      <div class="filter-bar-title">Find events to vote on</div>
+      <div class="chips" id="interestChips">
+        <button class="chip" data-val="art">🎨 Art</button>
+        <button class="chip" data-val="music">🎵 Music</button>
+        <button class="chip" data-val="food">🍽️ Food</button>
+        <button class="chip" data-val="tech">💻 Tech</button>
+        <button class="chip" data-val="outdoor">🌿 Outdoor</button>
+        <button class="chip" data-val="film">🎬 Film</button>
+        <button class="chip" data-val="culture">🏛️ Culture</button>
+        <button class="chip" data-val="social">🥂 Social</button>
+        <button class="chip" data-val="clubbing">🎧 Clubbing</button>
+      </div>
+      <div class="chips" id="budgetChips">
+        <button class="chip budget-active" data-budget="any">Any budget</button>
+        <button class="chip" data-budget="free">Free 🙌</button>
+        <button class="chip" data-budget="low">Under £20</button>
+        <button class="chip" data-budget="medium">Under £50</button>
+      </div>
+      <button class="find-btn" id="findBtn" onclick="findEvents()">Find events for us →</button>
+    </div>
+
+    <!-- Events -->
+    <div id="eventsArea"></div>
+  </div>
+</main>
+
+<!-- Decision Wheel Modal -->
+<div class="wheel-overlay" id="wheelOverlay">
+  <div class="wheel-modal">
+    <button class="wheel-close" onclick="closeWheel()">✕</button>
+    <div class="wheel-title">🎰 The Decider</div>
+    <p class="wheel-sub">Weighted by yes-votes — more yes = bigger slice</p>
+    <div class="wheel-wrap">
+      <div class="wheel-pointer"></div>
+      <canvas id="wheelCanvas" width="300" height="300"></canvas>
+      <div class="wheel-center"></div>
+    </div>
+    <button class="spin-btn" id="spinBtn" onclick="spinWheel()">SPIN IT</button>
+    <div class="wheel-result" id="wheelResult">
+      <div class="result-label">🎉 Tonight you're going to...</div>
+      <div class="result-title" id="resultTitle"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let squadCode = null, myName = null, myVotes = {}, squadInterests = [], squadBudget = 'any', pollInterval = null;
+  let wheelEvents = [], wheelAngle = 0, isSpinning = false;
+  const WHEEL_COLORS = ['#FF3CAC','#3B82F6','#00D4AA','#FFE000','#FF6B35','#8B5CF6','#EC4899','#14B8A6'];
+
+  const pathParts = window.location.pathname.split('/');
+  const urlCode = pathParts[pathParts.length - 1];
+  if (urlCode && urlCode.includes('-') && urlCode.length === 7) {
+    document.getElementById('joinCode').value = urlCode.toUpperCase();
+  }
+
+  document.querySelectorAll('#interestChips .chip').forEach(c => {
+    c.addEventListener('click', () => {
+      c.classList.toggle('active');
+      const val = c.dataset.val;
+      squadInterests = squadInterests.includes(val) ? squadInterests.filter(i=>i!==val) : [...squadInterests, val];
+    });
+  });
+
+  document.querySelectorAll('#budgetChips .chip').forEach(c => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('#budgetChips .chip').forEach(b=>b.classList.remove('budget-active'));
+      c.classList.add('budget-active');
+      squadBudget = c.dataset.budget;
+    });
+  });
+
+  async function createSquad() {
+    const name = document.getElementById('createName').value.trim();
+    const sName = document.getElementById('squadName').value.trim();
+    const city = document.getElementById('createCity').value.trim() || 'London';
+    if (!name) { showToast('Enter your name first!'); return; }
+    if (!sName) { showToast('Give your squad a name!'); return; }
+    try {
+      const res = await fetch('/api/squad/create', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name,city,creator:name}) });
+      const data = await res.json();
+      if (data.code) { squadCode=data.code; myName=name; enterSquadRoom(data.squad,data.code); showToast('Squad created! Share the code 🎉'); }
+    } catch(e) { showToast('Something went wrong, try again'); }
+  }
+
+  async function joinSquad() {
+    const name = document.getElementById('joinName').value.trim();
+    const raw = document.getElementById('joinCode').value.trim().toUpperCase().replace(/\s/g, '');
+    // Accept both with and without hyphen — normalise to XXX-XXX format
+    const code = raw.includes('-') ? raw : raw.slice(0,3) + '-' + raw.slice(3);
+    if (!name) { showToast('Enter your name first!'); return; }
+    if (code.replace('-','').length !== 6) { showToast('Code should be 6 characters e.g. XK7P2M or XK7-P2M'); return; }
+    try {
+      const res = await fetch(`/api/squad/${code}/join`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name}) });
+      const data = await res.json();
+      if (data.squad) {
+        squadCode = code; myName = name;
+        enterSquadRoom(data.squad, code);
+        showToast(`Joined ${data.squad.name}! 👋`);
+      } else {
+        showToast(data.error || 'Squad not found — check the code');
+      }
+    } catch(e) {
+      showToast('Connection error — is the app running?');
+      console.error('Join error:', e);
+    }
+  }
+
+  function enterSquadRoom(squad, code) {
+    document.getElementById('screenLanding').classList.remove('active');
+    document.getElementById('screenSquad').classList.add('active');
+    document.getElementById('squadDisplayName').textContent = squad.name;
+    document.getElementById('squadDisplayCity').textContent = `📍 ${squad.city}`;
+    document.getElementById('squadDisplayCode').textContent = code;
+    updateMembers(squad.members);
+    window.history.pushState({}, '', `/squad/${code}`);
+    if (pollInterval) clearInterval(pollInterval);
+    pollInterval = setInterval(refreshSquad, 5000);
+    if (squad.events && squad.events.length > 0) renderEvents(squad.events);
+    checkDeadlineFromSquad(squad);
+  }
+
+  let lastEventsHash = null;
+  let isRendering = false;
+
+  async function refreshSquad() {
+    if (!squadCode || isRendering) return;
+    try {
+      const res = await fetch(`/api/squad/${squadCode}`);
+      const squad = await res.json();
+      updateMembers(squad.members);
+
+      if (squad.events && squad.events.length > 0) {
+        const hash = JSON.stringify(squad.events.map(e => ({v: e.votes, c: e.consensus})));
+        if (hash !== lastEventsHash) {
+          lastEventsHash = hash;
+          // Update vote counts in-place without full re-render
+          squad.events.forEach(ev => {
+            const yEl = document.getElementById(`yes-${ev.id}`);
+            if (!yEl) return; // cards not rendered yet, skip
+            yEl.textContent = ev.votes?.yes || 0;
+            document.getElementById(`maybe-${ev.id}`).textContent = ev.votes?.maybe || 0;
+            document.getElementById(`no-${ev.id}`).textContent = ev.votes?.no || 0;
+            const totalMembers = ev.total_members || 1;
+            const yesW = Math.round(((ev.votes?.yes||0) / totalMembers) * 100);
+            const maybeW = Math.round(((ev.votes?.maybe||0) / totalMembers) * 100);
+            const noW = Math.round(((ev.votes?.no||0) / totalMembers) * 100);
+            const card = document.getElementById(`card-${ev.id}`);
+            if (card) {
+              const by = card.querySelector('.vote-bar-yes');
+              const bm = card.querySelector('.vote-bar-maybe');
+              const bn = card.querySelector('.vote-bar-no');
+              if (by) by.style.width = yesW + '%';
+              if (bm) bm.style.width = maybeW + '%';
+              if (bn) bn.style.width = noW + '%';
+            }
+            // Update wheelEvents too
+            const idx = wheelEvents.findIndex(e => e.id === ev.id);
+            if (idx !== -1) wheelEvents[idx].votes = ev.votes;
+          });
+        }
+      }
+
+      checkDeadlineFromSquad(squad);
+    } catch(e) {}
+  }
+
+  function updateMembers(members) {
+    document.getElementById('membersBar').innerHTML = members.map(m =>
+      `<div class="member-pill ${m.name===myName?'you':''}"><span class="member-dot"></span>${m.name}${m.name===myName?' (you)':''}</div>`
+    ).join('');
+  }
+
+  async function findEvents() {
+    const interests = squadInterests.length ? squadInterests : ['social','music','culture'];
+    const btn = document.getElementById('findBtn');
+    btn.disabled = true; btn.textContent = 'Searching...';
+    document.getElementById('eventsArea').innerHTML = `<div class="loading-box"><div class="loading-blob"></div><div class="loading-text">Finding events for the squad...</div><div class="loading-sub">Searching Eventbrite, Luma, Dice & more</div></div>`;
+    try {
+      const res = await fetch(`/api/squad/${squadCode}/add-events`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({interests,budget:squadBudget,time_filter:'this weekend'}) });
+      const data = await res.json();
+      if (data.events && data.events.length > 0) {
+        lastEventsHash = null; // force re-render on fresh search
+        renderEvents(data.events);
+        showToast(`${data.events.length} events found — vote away! 🗳️`);
+      }
+      else { document.getElementById('eventsArea').innerHTML = `<div class="empty-state"><div class="empty-emoji">🔍</div><h3>Nothing found</h3><p>Try different interests or a wider time range.</p></div>`; }
+    } catch(e) { showToast('Search failed — try again'); }
+    finally { btn.disabled=false; btn.textContent='Find events for us →'; }
+  }
+
+  function renderEvents(events) {
+    wheelEvents = events;
+    lastEventsHash = JSON.stringify(events.map(e => ({v: e.votes, c: e.consensus})));
+    const area = document.getElementById('eventsArea');
+    const hasVotes = events.some(e => (e.votes?.yes||0) > 0);
+    const topPick = events.find(e => e.consensus==="everyone's in" || e.consensus==='popular');
+
+    // Show set-deadline row if no active deadline
+    if (!deadlineISO) {
+      document.getElementById('setDeadlineRow').style.display = 'flex';
+    }
+    let html = '';
+
+    if (hasVotes) {
+      html += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
+        <div class="section-title" style="margin:0;">Vote on events <span style="font-size:13px;font-weight:400;color:var(--muted);margin-left:4px;">${events.length} found</span></div>
+        <button class="wheel-btn" onclick="openWheel()">🎰 Spin the decider</button>
+      </div>`;
+    } else {
+      html += `<div class="section-title">Vote on events <span style="font-size:13px;font-weight:400;color:var(--muted);margin-left:4px;">${events.length} found</span> <button class="refresh-btn" onclick="refreshSquad()">↻ Refresh</button></div>`;
+    }
+
+    if (topPick) {
+      html += `<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem;">🏆 Squad favourite</div>`;
+      html += buildCard(topPick, true);
+      html += `<div class="divider"></div>`;
+      events.filter(e=>e!==topPick).forEach(ev => { html += buildCard(ev, false); });
+    } else {
+      events.forEach(ev => { html += buildCard(ev, false); });
+    }
+    area.innerHTML = `<div class="events-list">${html}</div>`;
+  }
+
+  function buildCard(ev) {
+    const isFree = (ev.price||'').toLowerCase()==='free' || ev.price_value===0;
+    const votes = ev.votes || {yes:0,no:0,maybe:0};
+    const yesW = ev.total_members ? Math.round((votes.yes/ev.total_members)*100) : 0;
+    const maybeW = ev.total_members ? Math.round((votes.maybe/ev.total_members)*100) : 0;
+    const noW = ev.total_members ? Math.round((votes.no/ev.total_members)*100) : 0;
+    const myVote = myVotes[ev.id] || null;
+    const consensusClass = ev.consensus==="everyone's in"?'consensus-all':ev.consensus==='popular'?'consensus-popular':'';
+    const consensusBanner = ev.consensus==="everyone's in"?'🎉 Everyone\'s in!':ev.consensus==='popular'?'🔥 Popular pick':'';
+    return `<div class="vote-card ${consensusClass}" id="card-${ev.id}">
+      ${consensusBanner?`<div class="consensus-banner">${consensusBanner}</div>`:''}
+      <div class="vote-card-body">
+        <div>
+          <div class="event-category">${ev.category||'event'}</div>
+          <div class="event-title">${ev.title||'Event'}</div>
+          <div class="event-organiser">${ev.organiser||''}</div>
+          <div class="event-meta"><span>📅 ${ev.date||'—'}</span><span>🕐 ${ev.time||'—'}</span><span>📍 ${ev.location||'—'}</span></div>
+          <div style="font-size:13px;color:#555;line-height:1.5;margin-bottom:10px;">${ev.description||''}</div>
+          <div class="vote-buttons">
+            <button class="vote-btn yes ${myVote==='yes'?'voted':''}" onclick="castVote('${ev.id}','yes',this)">👍<span class="vote-count" id="yes-${ev.id}">${votes.yes}</span></button>
+            <button class="vote-btn maybe ${myVote==='maybe'?'voted':''}" onclick="castVote('${ev.id}','maybe',this)">🤔<span class="vote-count" id="maybe-${ev.id}">${votes.maybe}</span></button>
+            <button class="vote-btn no ${myVote==='no'?'voted':''}" onclick="castVote('${ev.id}','no',this)">👎<span class="vote-count" id="no-${ev.id}">${votes.no}</span></button>
+          </div>
+          <div class="vote-bar-wrap">
+            <div class="vote-bar-label">Squad consensus</div>
+            <div class="vote-bar">
+              <div class="vote-bar-yes" style="width:${yesW}%"></div>
+              <div class="vote-bar-maybe" style="width:${maybeW}%"></div>
+              <div class="vote-bar-no" style="width:${noW}%"></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+          <span class="price-tag ${isFree?'free':''}">${isFree?'Free':(ev.price||'—')}</span>
+          <span style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;">${ev.source||''}</span>
+          ${ev.url?`<a href="${ev.url}" target="_blank" rel="noopener" style="font-size:12px;color:var(--pink);font-weight:700;text-decoration:none;">View ↗</a>`:''}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  async function castVote(eventId, vote, btn) {
+    if (!myName) return;
+    myVotes[eventId] = vote;
+    document.getElementById(`card-${eventId}`).querySelectorAll('.vote-btn').forEach(b=>b.classList.remove('voted'));
+    btn.classList.add('voted');
+    try {
+      const res = await fetch(`/api/squad/${squadCode}/vote`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({event_id:eventId,member_name:myName,vote}) });
+      const data = await res.json();
+      if (data.yes !== undefined) {
+        // Update counts in-place — no re-render needed
+        document.getElementById(`yes-${eventId}`).textContent = data.yes;
+        document.getElementById(`maybe-${eventId}`).textContent = data.maybe;
+        document.getElementById(`no-${eventId}`).textContent = data.no;
+        // Update vote bar widths in-place
+        const card = document.getElementById(`card-${eventId}`);
+        const totalMembers = wheelEvents.find(e=>e.id===eventId)?.total_members || 1;
+        const yesW = Math.round((data.yes / totalMembers) * 100);
+        const maybeW = Math.round((data.maybe / totalMembers) * 100);
+        const noW = Math.round((data.no / totalMembers) * 100);
+        const barYes = card.querySelector('.vote-bar-yes');
+        const barMaybe = card.querySelector('.vote-bar-maybe');
+        const barNo = card.querySelector('.vote-bar-no');
+        if (barYes) barYes.style.width = yesW + '%';
+        if (barMaybe) barMaybe.style.width = maybeW + '%';
+        if (barNo) barNo.style.width = noW + '%';
+        // Also update wheelEvents so the wheel reflects latest votes
+        const evIdx = wheelEvents.findIndex(e=>e.id===eventId);
+        if (evIdx !== -1) wheelEvents[evIdx].votes = {yes:data.yes, maybe:data.maybe, no:data.no};
+      }
+    } catch(e) { showToast('Could not save vote'); }
+  }
+
+  // ── DECISION WHEEL ──
+  function buildSegments() {
+    return wheelEvents.map((ev,i) => ({
+      title: ev.title || 'Event',
+      weight: Math.max(1, (ev.votes?.yes||0)*3 + (ev.votes?.maybe||0)),
+      color: WHEEL_COLORS[i % WHEEL_COLORS.length],
+      event: ev
+    }));
+  }
+
+  function drawWheel(angle) {
+    const canvas = document.getElementById('wheelCanvas');
+    const ctx = canvas.getContext('2d');
+    const cx = canvas.width/2, cy = canvas.height/2, r = cx-4;
+    const segments = buildSegments();
+    const total = segments.reduce((s,seg)=>s+seg.weight,0);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    let start = angle;
+    segments.forEach(seg => {
+      const slice = (seg.weight/total)*Math.PI*2;
+      const end = start+slice;
+      ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,start,end); ctx.closePath();
+      ctx.fillStyle=seg.color; ctx.fill();
+      ctx.strokeStyle='#0D0D0D'; ctx.lineWidth=2; ctx.stroke();
+      const mid = start+slice/2;
+      const lx = cx+Math.cos(mid)*r*0.62, ly = cy+Math.sin(mid)*r*0.62;
+      ctx.save(); ctx.translate(lx,ly); ctx.rotate(mid+Math.PI/2);
+      ctx.fillStyle='#0D0D0D';
+      ctx.font=`700 ${slice>0.5?11:9}px "Plus Jakarta Sans",sans-serif`;
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      const max = slice>0.8?18:slice>0.4?12:8;
+      ctx.fillText(seg.title.length>max?seg.title.slice(0,max-1)+'…':seg.title,0,0);
+      ctx.restore();
+      start=end;
+    });
+    ctx.beginPath(); ctx.arc(cx,cy,18,0,Math.PI*2);
+    ctx.fillStyle='#fff'; ctx.fill();
+    ctx.strokeStyle='#0D0D0D'; ctx.lineWidth=3; ctx.stroke();
+  }
+
+  function openWheel() {
+    if (wheelEvents.length < 2) { showToast('Need at least 2 events to spin!'); return; }
+    document.getElementById('wheelOverlay').classList.add('open');
+    document.getElementById('wheelResult').classList.remove('show');
+    document.getElementById('spinBtn').disabled=false;
+    document.getElementById('spinBtn').textContent='SPIN IT';
+    drawWheel(wheelAngle);
+  }
+
+  function closeWheel() { document.getElementById('wheelOverlay').classList.remove('open'); }
+
+  function spinWheel() {
+    if (isSpinning) return;
+    isSpinning=true;
+    document.getElementById('spinBtn').disabled=true;
+    document.getElementById('spinBtn').textContent='Spinning...';
+    document.getElementById('wheelResult').classList.remove('show');
+    const segments = buildSegments();
+    const total = segments.reduce((s,seg)=>s+seg.weight,0);
+    let rand = Math.random()*total, winnerIdx=0;
+    for (let i=0;i<segments.length;i++) { rand-=segments[i].weight; if(rand<=0){winnerIdx=i;break;} }
+    let cumAngle=0;
+    for(let i=0;i<winnerIdx;i++) cumAngle+=(segments[i].weight/total)*Math.PI*2;
+    const winnerMid = cumAngle+(segments[winnerIdx].weight/total)*Math.PI;
+    const targetOffset = -Math.PI/2-winnerMid;
+    const extraSpins = (Math.floor(Math.random()*3)+5)*Math.PI*2;
+    const finalAngle = wheelAngle+extraSpins+targetOffset;
+    const startAngle=wheelAngle, duration=4000+Math.random()*1000, startTime=performance.now();
+    function easeOut(t){return 1-Math.pow(1-t,4);}
+    function animate(now) {
+      const progress=Math.min((now-startTime)/duration,1);
+      wheelAngle=startAngle+(finalAngle-startAngle)*easeOut(progress);
+      drawWheel(wheelAngle);
+      if(progress<1){requestAnimationFrame(animate);}
+      else{wheelAngle=finalAngle;isSpinning=false;showResult(segments[winnerIdx]);}
+    }
+    requestAnimationFrame(animate);
+  }
+
+  function showResult(winner) {
+    document.getElementById('spinBtn').disabled=false;
+    document.getElementById('spinBtn').textContent='Spin again';
+    document.getElementById('resultTitle').textContent=winner.title;
+    document.getElementById('wheelResult').classList.add('show');
+    showToast('🎉 The decider has spoken!');
+  }
+
+  // ══════════════════════════════
+  // DEADLINE + COUNTDOWN
+  // ══════════════════════════════
+
+  let deadlineInterval = null;
+  let deadlineISO = null;
+  let deadlineTotalSeconds = null;
+  let hasAutoSpun = false;
+
+  function startDeadlineUI(isoString, totalMinutes) {
+    deadlineISO = isoString;
+    deadlineTotalSeconds = totalMinutes * 60;
+    hasAutoSpun = false;
+
+    document.getElementById('deadlineBar').style.display = 'flex';
+    document.getElementById('setDeadlineRow').style.display = 'none';
+
+    if (deadlineInterval) clearInterval(deadlineInterval);
+    deadlineInterval = setInterval(tickCountdown, 1000);
+    tickCountdown();
+  }
+
+  function tickCountdown() {
+    const now = new Date();
+    const end = new Date(deadlineISO);
+    const remaining = Math.max(0, Math.floor((end - now) / 1000));
+
+    // Format time display
+    const h = Math.floor(remaining / 3600);
+    const m = Math.floor((remaining % 3600) / 60);
+    const s = remaining % 60;
+    let display;
+    if (h > 0) display = `${h}h ${m}m`;
+    else if (m > 0) display = `${m}m ${s}s`;
+    else display = `${s}s`;
+
+    document.getElementById('deadlineTime').textContent = display;
+    document.getElementById('countdownNumber').textContent = remaining > 3600 ? `${h}h` : remaining > 60 ? `${m}m` : `${s}`;
+
+    // Ring progress
+    const circumference = 125.7;
+    const progress = deadlineTotalSeconds > 0 ? remaining / deadlineTotalSeconds : 0;
+    const offset = circumference * (1 - progress);
+    const ring = document.getElementById('ringFill');
+    ring.style.strokeDashoffset = offset;
+
+    // Colour shifts red as time runs low
+    if (remaining < 60) ring.style.stroke = '#FF3CAC';
+    else if (remaining < 300) ring.style.stroke = '#FF6B35';
+    else ring.style.stroke = '#FFE000';
+
+    // Time's up!
+    if (remaining === 0) {
+      clearInterval(deadlineInterval);
+      document.getElementById('deadlineTime').textContent = "Time's up!";
+      if (!hasAutoSpun) {
+        hasAutoSpun = true;
+        triggerAutoSpin();
+      }
+    }
+  }
+
+  function triggerAutoSpin() {
+    // Show expired banner then open wheel
+    const eventsArea = document.getElementById('eventsArea');
+    const banner = document.createElement('div');
+    banner.className = 'expired-banner';
+    banner.innerHTML = `<div class="expired-title">⏰ Voting closed!</div><div class="expired-sub">Auto-spinning the decider...</div>`;
+    eventsArea.insertBefore(banner, eventsArea.firstChild);
+
+    showToast("Time's up — spinning the decider! 🎰");
+
+    setTimeout(() => {
+      openWheel();
+      // Auto-spin after a short delay for drama
+      setTimeout(() => spinWheel(), 1200);
+    }, 1500);
+  }
+
+  async function setDeadline(minutes) {
+    if (!squadCode) return;
+    try {
+      const res = await fetch(`/api/squad/${squadCode}/set-deadline`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ minutes })
+      });
+      const data = await res.json();
+      if (data.deadline) {
+        startDeadlineUI(data.deadline, minutes);
+        const label = minutes < 60 ? `${minutes} min` : minutes < 1440 ? `${minutes/60}h` : '24h';
+        showToast(`⏰ Voting deadline set — ${label} on the clock!`);
+      }
+    } catch(e) { showToast('Could not set deadline'); }
+  }
+
+  async function clearDeadline() {
+    if (!squadCode) return;
+    if (deadlineInterval) clearInterval(deadlineInterval);
+    deadlineISO = null;
+    document.getElementById('deadlineBar').style.display = 'none';
+    document.getElementById('setDeadlineRow').style.display = 'flex';
+    try {
+      await fetch(`/api/squad/${squadCode}/clear-deadline`, { method: 'POST' });
+    } catch(e) {}
+    showToast('Deadline cleared');
+  }
+
+  function checkDeadlineFromSquad(squad) {
+    if (squad.deadline) {
+      const end = new Date(squad.deadline);
+      if (end > new Date()) {
+        // Active deadline — restore countdown
+        if (!deadlineISO || deadlineISO !== squad.deadline) {
+          startDeadlineUI(squad.deadline, squad.deadline_minutes || 30);
+        }
+      } else if (!hasAutoSpun) {
+        // Already expired
+        hasAutoSpun = true;
+        document.getElementById('deadlineBar').style.display = 'flex';
+        document.getElementById('deadlineTime').textContent = "Time's up!";
+        document.getElementById('setDeadlineRow').style.display = 'none';
+      }
+    } else {
+      // No deadline — show set-deadline row if events are loaded
+      if (document.getElementById('eventsArea').innerHTML.trim()) {
+        document.getElementById('setDeadlineRow').style.display = 'flex';
+      }
+      document.getElementById('deadlineBar').style.display = 'none';
+    }
+  }
+
+  function copyCode() {
+    const code=document.getElementById('squadDisplayCode').textContent;
+    const url=`${window.location.origin}/squad/${code}`;
+    navigator.clipboard.writeText(`Join my squad on out.!\n\nCode: ${code}\nLink: ${url}`).then(()=>showToast('Copied! Paste into WhatsApp 📲'));
+  }
+
+  function showToast(msg) {
+    const t=document.getElementById('toast');
+    t.textContent=msg; t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'),2500);
+  }
+
+  document.getElementById('wheelOverlay').addEventListener('click',function(e){if(e.target===this)closeWheel();});
+</script>
+</body>
+</html>
