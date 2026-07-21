@@ -1,4 +1,4 @@
-# out. — event finder app
+# out. (event finder app)
 
 out. is web app that finds real events across Eventbrite, Luma, Dice, Meetup, museums and more and aggregates them in one place. You can filter by interests, budget, and weather and plan nights out with friends using squad mode.
 
